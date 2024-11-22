@@ -8,7 +8,7 @@ trigger:
 
 # Use self-hosted Ubuntu agent
 pool:
-  name: 'Default'  # Change to your self-hosted pool name, or leave 'Default' if it's self-hosted with default settings
+  name: 'Hms-self-pipeline'  # Change to your self-hosted pool name, or leave 'Default' if it's self-hosted with default settings
 
 variables:
   solution: '**/*.sln'
