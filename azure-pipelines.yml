@@ -2,10 +2,10 @@ trigger:
   - master
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'windows-2019'
 
 variables:
-  sqlprojFile: 'Database1.sqlproj'  # Path to .sqlproj file
+  sqlprojFile: 'Database1.sqlproj'   # Path to the .sqlproj file
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
@@ -14,24 +14,24 @@ steps:
 
 - task: NuGetCommand@2
   inputs:
-    restoreSolution: '**/*.sln'  # Restore NuGet packages
+    restoreSolution: '**/*.sln'
 
 - task: VSBuild@1
   inputs:
-    solution: '$(sqlprojFile)'
+    solution: '$(sqlprojFile)'   # Build the .sqlproj file directly
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-# Debugging step to locate the .dacpac file
 - task: PowerShell@2
   inputs:
     targetType: 'inline'
     script: |
+      Write-Host "Listing files in $(System.DefaultWorkingDirectory):"
       Get-ChildItem -Recurse "$(System.DefaultWorkingDirectory)" | Where-Object { $_.Name -like "*.dacpac" }
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)/Database1/bin/$(buildConfiguration)'  # Adjusted folder path
+    SourceFolder: '$(System.DefaultWorkingDirectory)/Database1/bin/$(buildConfiguration)'  # Correct output folder
     Contents: '*.dacpac'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
