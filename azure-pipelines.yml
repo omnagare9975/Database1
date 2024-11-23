@@ -5,7 +5,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/Database1.sln'  # Pointing to the correct .sln file
+  sqlprojFile: '**/Database1.sqlproj'  # Targeting the .sqlproj file
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
@@ -14,27 +14,22 @@ steps:
 
 - task: NuGetCommand@2
   inputs:
-    restoreSolution: '$(solution)'
+    restoreSolution: '**/*.sln'  # Ensure NuGet dependencies for the solution are restored
 
 - task: VSBuild@1
   inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  inputs:
+    solution: '$(sqlprojFile)'  # Building the .sqlproj file
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)/Scripts'  # Copy from the Scripts folder
-    Contents: '**/*.sql'  # Adjust to include all .sql files in Scripts
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
+    Contents: '**/bin/$(buildConfiguration)/*.dacpac'  # Locate and copy the .dacpac file
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'sql-files'
+    ArtifactName: 'dacpac'
     publishLocation: 'Container'
