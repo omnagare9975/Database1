@@ -6,7 +6,7 @@ pool:
 
 variables:
   sqlServerName: "om-db-testing.database.windows.net"
-  sqlDatabaseName: "db-auto "
+  sqlDatabaseName: "db-auto"
   sqlUsername: "omnagare"
   sqlPassword: "Ironman7028@"
 
