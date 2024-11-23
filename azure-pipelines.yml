@@ -68,6 +68,6 @@ steps:
       az account set --subscription $(azureSubscription)
       
       # Use sqlpackage for deploying DACPAC (ensure sqlpackage is installed on Windows agents)
-      sqlpackage.exe /Action:Publish /SourceFile:$(Build.ArtifactStagingDirectory)/drop/*.dacpac /TargetServerName:$(sqlServer) /TargetDatabaseName:$(databaseName) /TargetUser:$(sqlUsername) /TargetPassword:$(sqlPassword)
+      sqlpackage.exe /Action:Publish /SourceFile:$(Build.ArtifactStagingDirectory)/drop/*.dacpac /TargetServerName:$(sqlServer) /TargetDatabaseName:$(databaseName) /TargetUser:$(sqlUsername) /TargetPassword:Ironman7028@
 
     displayName: 'Deploy DACPAC to Azure SQL Database'
