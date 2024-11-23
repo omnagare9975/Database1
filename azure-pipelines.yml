@@ -31,12 +31,19 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-# Copy the .dacpac file and sample.sql from the build output
+# Copy the .dacpac file from the build output
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(System.DefaultWorkingDirectory)' # Default working directory for the build agent
-    Contents: '**/bin/Release/*.dacpac, **/Scripts/sample.sql'  # Include sample.sql along with .dacpac
+    Contents: '**/bin/Release/*.dacpac'               # Match the .dacpac file anywhere under the bin\Release folder
     TargetFolder: '$(Build.ArtifactStagingDirectory)' # Artifact staging directory
+
+# Copy the sample.sql file from Scripts folder
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)\Scripts'  # Point to the Scripts folder
+    Contents: 'sample.sql'                                    # Ensure sample.sql is copied
+    TargetFolder: '$(Build.ArtifactStagingDirectory)\Scripts'   # Specify where to copy it in the artifact
 
 # Publish the artifact for deployment or other pipelines
 - task: PublishBuildArtifacts@1
