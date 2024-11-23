@@ -5,7 +5,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/Database1.sln' # Update to your solution file
+  solution: '**/Database1.sln'  # Update to your solution file
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   sqlServer: 'om-db-testing.database.windows.net'  # Your SQL server name
@@ -38,7 +38,7 @@ steps:
 # Copy the .dacpac file from the build output
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)' # Default working directory for the build agent
+    SourceFolder: '$(System.DefaultWorkingDirectory)'  # Default working directory for the build agent
     Contents: '**/bin/Release/*.dacpac'               # Match the .dacpac file anywhere under the bin\Release folder
     TargetFolder: '$(Build.ArtifactStagingDirectory)' # Artifact staging directory
 
@@ -52,18 +52,26 @@ steps:
 # Publish the artifact for deployment or other pipelines
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)' # The folder containing the .dacpac and sample.sql
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'  # The folder containing the .dacpac and sample.sql
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
-# Deploy the .dacpac file to Azure SQL Database
-- task: SqlAzureDacpacDeployment@1
+# Deploy the .dacpac file to Azure SQL Database using Azure CLI
+- task: AzureCLI@2
   inputs:
     azureSubscription: 'Ballotnow-Backend-Service'  # Replace with your Azure subscription
-    ServerName: '$(sqlServer)'  # Replace with your SQL Server name (or Azure SQL Database server)
-    DatabaseName: '$(databaseName)'  # Database name from variable
-    DacpacFile: '$(Build.ArtifactStagingDirectory)/drop/*.dacpac'  # Path to .dacpac file in the artifact
-    SqlUsername: '$(sqlUsername)'  # Replace with your SQL server username
-    SqlPassword: '$(sqlPassword)'  # Secure SQL password from pipeline secrets
-    PublishProfile: ''  # Optional, if using a publish profile (for advanced scenarios)
-    AdditionalArguments: '/p:DropObjectsNotInSource=true'  # Optional: argument to drop objects not in source
+    scriptType: 'bash'  # Azure CLI uses bash by default
+    scriptLocation: 'inlineScript'  # Inline Azure CLI script
+    inlineScript: |
+      # Login to Azure if not already authenticated
+      az account set --subscription $(azureSubscription)
+      
+      # Deploy the .dacpac file to the Azure SQL Database
+      az sql db deploy --server $(sqlServer) \
+                       --name $(databaseName) \
+                       --resource-group $(resourceGroupName) \
+                       --dacpac $(Build.ArtifactStagingDirectory)/drop/*.dacpac \
+                       --admin-user $(sqlUsername) \
+                       --admin-password $(sqlPassword) \
+                       --additional-arguments '/p:DropObjectsNotInSource=true'
+    displayName: 'Deploy DACPAC to Azure SQL Database'
