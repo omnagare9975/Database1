@@ -59,7 +59,7 @@ steps:
 # Deploy the .dacpac file to Azure SQL Database
 - task: SqlAzureDacpacDeployment@1
   inputs:
-    azureSubscription: 'ITX-ADMIN-SERVICE'  # Replace with your Azure subscription
+    azureSubscription: 'Ballotnow-Backend-Service'  # Replace with your Azure subscription
     ServerName: '$(sqlServer)'  # Replace with your SQL Server name (or Azure SQL Database server)
     DatabaseName: '$(databaseName)'  # Database name from variable
     DacpacFile: '$(Build.ArtifactStagingDirectory)/drop/*.dacpac'  # Path to .dacpac file in the artifact
