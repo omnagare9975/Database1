@@ -1,8 +1,3 @@
-# .NET Desktop
-# Build and run tests for .NET Desktop or Windows classic desktop solutions.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
-
 trigger:
 - master
 
@@ -10,36 +5,42 @@ pool:
   name: 'Windows-Based'
 
 variables:
-  solution: '**/*.sln'
+  solution: '**/Database1.sln' # Update to your solution file
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
 steps:
+# Install NuGet (ensures package manager is available)
 - task: NuGetToolInstaller@1
 
+# Restore NuGet packages for the solution
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
 
+# Build the solution using Visual Studio
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+# Run tests (if any)
 - task: VSTest@2
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+# Copy the .dacpac file from the build output
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)'
-    Contents: 'SQLDatabase\bin\Release\SQLDatabase.dacpac'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    SourceFolder: '$(System.DefaultWorkingDirectory)' # Default working directory for the build agent
+    Contents: '**/bin/Release/*.dacpac'               # Match the .dacpac file anywhere under the bin\Release folder
+    TargetFolder: '$(Build.ArtifactStagingDirectory)' # Artifact staging directory
 
+# Publish the artifact for deployment or other pipelines
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    pathToPublish: '$(Build.ArtifactStagingDirectory)' # The folder containing the .dacpac
     ArtifactName: 'drop'
     publishLocation: 'Container'
