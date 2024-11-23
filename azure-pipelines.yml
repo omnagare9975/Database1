@@ -61,12 +61,10 @@ steps:
 - task: SQLAzureDacpacDeployment@1
   inputs:
     azureSubscription: '$(azureSubscription)'  # Azure DevOps service connection
-    ServerName: '$(sqlServer)'  # The Azure SQL server name
-    DatabaseName: '$(databaseName)'  # The target database name
-    AuthenticationType: 'SQLAuthentication'  # Authentication type
-    SqlServerUsername: '$(sqlUsername)'  # SQL username
-    SqlServerPassword: 'Ironman7028@'  # SQL password (ensure this is a secret variable in the pipeline)
-    Action: 'Publish'  # Action to publish the DACPAC
-    SqlFile: '$(Build.ArtifactStagingDirectory)\drop\*.dacpac'  # Path to the DACPAC file
-    DeployType: 'DACPAC'  # Specify that you are deploying a DACPAC
-  displayName: 'Deploy DACPAC to Azure SQL Database'
+    serverName: '$(sqlServer)'  # The Azure SQL server name
+    databaseName: '$(databaseName)'  # The target database name
+    authenticationType: 'SQLAuthentication'  # Authentication type
+    sqlUsername: '$(sqlUsername)'  # SQL username
+    sqlPassword: 'Ironman7028@'  # SQL password (ensure this is a secret variable in the pipeline)
+    action: 'Publish'  # Action to publish the DACPAC
+    dacpacFile: '$(Build.ArtifactStagingDirectory)\drop\*.dacpac'  # Path to the DACPAC file
