@@ -58,7 +58,7 @@ steps:
     publishLocation: 'Container'
 
 # Deploy the .dacpac file to Azure SQL Database using Azure SQL Database Deployment Task
-- task: AzureSqlDatabaseDeployment@1
+- task: SQLAzureDacpacDeployment@1
   inputs:
     azureSubscription: '$(azureSubscription)'  # Azure DevOps service connection
     ServerName: '$(sqlServer)'  # The Azure SQL server name
