@@ -13,7 +13,7 @@ variables:
   sqlUsername: 'omnagare'  # Your SQL username
   sqlPassword: 'Ironman7028@'  # SQL password should be stored as a secret variable in the pipeline
   resourceGroupName: 'db-om-testing'  # Define the resource group name here
-  azureSubscription: 'Ballotnow-Backend-Service'  # Subscription ID for Azure CLI
+  azureSubscription: '1d3eeea5-d29e-4dd6-95d9-ef17986de9a0'  # Subscription ID for Azure CLI
 
 steps:
 # Install NuGet (ensures package manager is available)
