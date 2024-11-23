@@ -1,70 +1,67 @@
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/Database1.sln'  # Update to your solution file
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-  sqlServer: 'om-db-testing.database.windows.net'  # Your SQL server name
-  databaseName: 'db-auto'  # Your target database name
-  sqlUsername: 'omnagare'  # Your SQL username
-  resourceGroupName: 'db-om-testing'  # Define the resource group name here
-  azureSubscription: 'Ballotnow-Backend-Service'  # Service Connection name (no need for subscription ID here)
+  sqlServerName: "om-db-testing.database.windows.net"
+  sqlDatabaseName: "db-auto "
+  sqlUsername: "omnagare"
+  sqlPassword: "Ironman7028@"
 
-steps:
-# Install NuGet (ensures package manager is available)
-- task: NuGetToolInstaller@1
+stages:
+- stage: Build
+  displayName: "Build DACPAC"
+  jobs:
+  - job: Build
+    displayName: "Build DACPAC"
+    steps:
+    - task: NuGetToolInstaller@1
+      displayName: "Install NuGet"
 
-# Restore NuGet packages for the solution
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+    - task: NuGetCommand@2
+      displayName: "Restore NuGet Packages"
+      inputs:
+        command: 'restore'
+        restoreSolution: '/Database1.sln'
 
-# Build the solution using Visual Studio
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    - task: VSBuild@1
+      displayName: "Build SQL Project"
+      inputs:
+        solution: '/Database1.sln'
+        msbuildArgs: '/p:DeployOnBuild=true /p:Configuration=Release'
+        platform: 'Any CPU'
+        configuration: 'Release'
 
-# Run tests (if any)
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    - task: PublishBuildArtifacts@1
+      displayName: "Publish DACPAC Artifact"
+      inputs:
+        pathtoPublish: '$(Build.SourcesDirectory)/bin/Release'
+        artifactName: 'DACPAC'
 
-# Copy the .dacpac file from the build output
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)'  # Default working directory for the build agent
-    Contents: '**/bin/Release/*.dacpac'               # Match the .dacpac file anywhere under the bin\Release folder
-    TargetFolder: '$(Build.ArtifactStagingDirectory)' # Artifact staging directory
+- stage: Deploy
+  displayName: "Deploy to Azure SQL"
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    displayName: "Deploy DACPAC to Azure SQL"
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: "Download Build Artifacts"
+      inputs:
+        buildType: 'current'
+        downloadType: 'specific'
+        artifactName: 'DACPAC'
+        downloadPath: '$(Pipeline.Workspace)/DACPAC'
 
-# Copy the sample.sql file from Scripts folder
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)\Scripts'  # Point to the Scripts folder
-    Contents: 'sample.sql'                                    # Ensure sample.sql is copied
-    TargetFolder: '$(Build.ArtifactStagingDirectory)\Scripts'   # Specify where to copy it in the artifact
-
-# Publish the artifact for deployment or other pipelines
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'  # The folder containing the .dacpac and sample.sql
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
-
-# Deploy the .dacpac file to Azure SQL Database using Azure SQL Database Deployment Task
-- task: SQLAzureDacpacDeployment@1
-  inputs:
-    azureSubscription: '$(azureSubscription)'  # Azure DevOps service connection
-    serverName: '$(sqlServer)'  # The Azure SQL server name
-    databaseName: '$(databaseName)'  # The target database name
-    authenticationType: 'SQLAuthentication'  # Authentication type
-    sqlUsername: '$(sqlUsername)'  # SQL username
-    sqlPassword: 'Ironman7028@'  # SQL password (ensure this is a secret variable in the pipeline)
-    action: 'Publish'  # Action to publish the DACPAC
-    dacpacFile: '$(Build.ArtifactStagingDirectory)\drop\*.dacpac'  # Path to the DACPAC file
+    - task: SqlAzureDacpacDeployment@1
+      displayName: "Deploy DACPAC"
+      inputs:
+        azureSubscription: "Ballotnow-Backend-Service"
+        ServerName: "$(sqlServerName)"
+        DatabaseName: "$(sqlDatabaseName)"
+        SqlUsername: "$(sqlUsername)"
+        SqlPassword: "$(sqlPassword)"
+        DacpacFile: '$(Pipeline.Workspace)/DACPAC/*.dacpac'
+        DeployType: 'DacpacTask'
