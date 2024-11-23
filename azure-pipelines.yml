@@ -2,7 +2,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'windwos-latest'
+  vmImage: 'windows-latest'
 
 variables:
   solution: '**/Database1.sln' # Update to your solution file
