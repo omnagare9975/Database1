@@ -1,42 +1,38 @@
 trigger:
-  - master
+- mater
 
 pool:
   vmImage: 'windows-latest'
 
-variables:
-  sqlprojFile: 'Database1.sqlproj'   # Path to the .sqlproj file
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
 
-steps:
-- task: NuGetToolInstaller@1
+stages:
+- stage: Build
+  displayName: "Build DACPAC"
+  jobs:
+  - job: Build
+    displayName: "Build DACPAC"
+    steps:
+    - task: NuGetToolInstaller@1
+      displayName: "Install NuGet"
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '**/*.sln'
+    - task: NuGetCommand@2
+      displayName: "Restore NuGet Packages"
+      inputs:
+        command: 'restore'
+        restoreSolution: '$(Build.SourcesDirectory)/Database1.sln'  # Path to solution file in root
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(sqlprojFile)'   # Build the .sqlproj file directly
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    - task: VSBuild@1
+      displayName: "Build SQL Project"
+      inputs:
+        solution: '$(Build.SourcesDirectory)/Database1.sln'  # Path to solution file in root
+        msbuildArgs: '/p:DeployOnBuild=true /p:Configuration=Release'
+        platform: 'Any CPU'
+        configuration: 'Release'
 
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      Write-Host "Listing files in $(System.DefaultWorkingDirectory):"
-      Get-ChildItem -Recurse "$(System.DefaultWorkingDirectory)" | Where-Object { $_.Name -like "*.dacpac" }
 
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)/Database1/bin/$(buildConfiguration)'  # Correct output folder
-    Contents: '*.dacpac'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'dacpac'
-    publishLocation: 'Container'
+    - task: PublishBuildArtifacts@1
+      displayName: "Publish DACPAC Artifact"
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'  # Use Artifact Staging Directory
+        artifactName: 'DACPAC'
+        publishLocation: 'Container'
