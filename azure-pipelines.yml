@@ -34,11 +34,17 @@ stages:
         platform: 'Any CPU'
         configuration: 'Release'
 
+    - script: |
+        echo "Listing files in $(Build.ArtifactStagingDirectory)"
+        dir "$(Build.ArtifactStagingDirectory)"
+      displayName: "List build output files"
+
     - task: PublishBuildArtifacts@1
       displayName: "Publish DACPAC Artifact"
       inputs:
-        pathtoPublish: '$(Build.ArtifactStagingDirectory)/bin/Release'  # Use Artifact Staging Directory
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'  # Use Artifact Staging Directory
         artifactName: 'DACPAC'
+        publishLocation: 'Container'
 
 - stage: Deploy
   displayName: "Deploy to Azure SQL"
