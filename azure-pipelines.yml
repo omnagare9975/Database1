@@ -5,7 +5,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  sqlprojFile: 'Database1.sqlproj'  # The .sqlproj file in the root directory
+  sqlprojFile: 'Database1.sqlproj'  # Path to .sqlproj file
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
@@ -14,18 +14,25 @@ steps:
 
 - task: NuGetCommand@2
   inputs:
-    restoreSolution: '$(sqlprojFile)'  # Restoring dependencies for the .sqlproj file
+    restoreSolution: '**/*.sln'  # Restore NuGet packages
 
 - task: VSBuild@1
   inputs:
-    solution: '$(sqlprojFile)'  # Building the SQL project
+    solution: '$(sqlprojFile)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+# Debugging step to locate the .dacpac file
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      Get-ChildItem -Recurse "$(System.DefaultWorkingDirectory)" | Where-Object { $_.Name -like "*.dacpac" }
+
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)/bin/$(buildConfiguration)'  # Output directory for .dacpac
-    Contents: '*.dacpac'  # Include only .dacpac files
+    SourceFolder: '$(System.DefaultWorkingDirectory)/Database1/bin/$(buildConfiguration)'  # Adjusted folder path
+    Contents: '*.dacpac'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishBuildArtifacts@1
