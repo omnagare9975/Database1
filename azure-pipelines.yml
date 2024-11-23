@@ -1,5 +1,5 @@
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'windows-latest'
@@ -64,4 +64,4 @@ stages:
         SqlUsername: "$(sqlUsername)"
         SqlPassword: "$(sqlPassword)"
         DacpacFile: '$(Pipeline.Workspace)/DACPAC/*.dacpac'
-        DeployType: 'DacpacTask'
+        DeployType: 'Publish'
