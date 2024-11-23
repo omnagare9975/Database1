@@ -2,14 +2,14 @@ trigger:
 - master
 
 pool:
-  name: 'Windows-Based'
+  vmImage: 'windwos-latest'
 
 variables:
   solution: '**/Database1.sln' # Update to your solution file
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  sqlServer: 'db-auto-om'  # Your SQL server name
-  databaseName: 'sql-db-om'  # Your target database name
+  sqlServer: 'om-db-testing.database.windows.net'  # Your SQL server name
+  databaseName: 'db-auto'  # Your target database name
   sqlUsername: 'omnagare'  # Your SQL username
   sqlPassword: 'Ironman7028@'  # SQL password should be stored as a secret variable in the pipeline
 
