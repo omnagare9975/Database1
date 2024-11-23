@@ -57,17 +57,16 @@ steps:
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
-# Deploy the .dacpac file to Azure SQL Database using Azure CLI
-- task: AzureCLI@2
+# Deploy the .dacpac file to Azure SQL Database using Azure SQL Database Deployment Task
+- task: AzureSqlDatabaseDeployment@1
   inputs:
-    azureSubscription: '$(azureSubscription)'  # Referencing the service connection name
-    scriptType: 'pscore'  # Use PowerShell Core for Windows-based agents
-    scriptLocation: 'inlineScript'  # Inline Azure CLI script
-    inlineScript: |
-      # Set the Azure subscription context
-      az account set --subscription $(azureSubscription)
-      
-      # Use sqlpackage for deploying DACPAC (ensure sqlpackage is installed on Windows agents)
-      sqlpackage.exe /Action:Publish /SourceFile:$(Build.ArtifactStagingDirectory)/drop/*.dacpac /TargetServerName:$(sqlServer) /TargetDatabaseName:$(databaseName) /TargetUser:$(sqlUsername) /TargetPassword:Ironman7028@
-
-    displayName: 'Deploy DACPAC to Azure SQL Database'
+    azureSubscription: '$(azureSubscription)'  # Azure DevOps service connection
+    ServerName: '$(sqlServer)'  # The Azure SQL server name
+    DatabaseName: '$(databaseName)'  # The target database name
+    AuthenticationType: 'SQLAuthentication'  # Authentication type
+    SqlServerUsername: '$(sqlUsername)'  # SQL username
+    SqlServerPassword: 'Ironman7028@'  # SQL password (ensure this is a secret variable in the pipeline)
+    Action: 'Publish'  # Action to publish the DACPAC
+    SqlFile: '$(Build.ArtifactStagingDirectory)\drop\*.dacpac'  # Path to the DACPAC file
+    DeployType: 'DACPAC'  # Specify that you are deploying a DACPAC
+  displayName: 'Deploy DACPAC to Azure SQL Database'
