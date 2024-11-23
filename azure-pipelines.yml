@@ -11,9 +11,8 @@ variables:
   sqlServer: 'om-db-testing.database.windows.net'  # Your SQL server name
   databaseName: 'db-auto'  # Your target database name
   sqlUsername: 'omnagare'  # Your SQL username
-  sqlPassword: 'Ironman7028@'  # SQL password should be stored as a secret variable in the pipeline
   resourceGroupName: 'db-om-testing'  # Define the resource group name here
-  azureSubscription: '1d3eeea5-d29e-4dd6-95d9-ef17986de9a0'  # Subscription ID for Azure CLI
+  azureSubscription: 'Ballotnow-Backend-Service'  # Service Connection name (no need for subscription ID here)
 
 steps:
 # Install NuGet (ensures package manager is available)
@@ -61,14 +60,14 @@ steps:
 # Deploy the .dacpac file to Azure SQL Database using Azure CLI
 - task: AzureCLI@2
   inputs:
-    azureSubscription: '$(azureSubscription)'  # Correctly reference the subscription ID
-    scriptType: 'bash'  # Azure CLI uses bash by default
+    azureSubscription: '$(azureSubscription)'  # Referencing the service connection name
+    scriptType: 'pscore'  # Use PowerShell Core for Windows-based agents
     scriptLocation: 'inlineScript'  # Inline Azure CLI script
     inlineScript: |
       # Set the Azure subscription context
       az account set --subscription $(azureSubscription)
       
-      # Use sqlpackage for deploying DACPAC (ensure sqlpackage is installed)
-      sqlpackage /Action:Publish /SourceFile:$(Build.ArtifactStagingDirectory)/drop/*.dacpac /TargetServerName:$(sqlServer) /TargetDatabaseName:$(databaseName) /TargetUser:$(sqlUsername) /TargetPassword:$(sqlPassword)
+      # Use sqlpackage for deploying DACPAC (ensure sqlpackage is installed on Windows agents)
+      sqlpackage.exe /Action:Publish /SourceFile:$(Build.ArtifactStagingDirectory)/drop/*.dacpac /TargetServerName:$(sqlServer) /TargetDatabaseName:$(databaseName) /TargetUser:$(sqlUsername) /TargetPassword:$(sqlPassword)
 
     displayName: 'Deploy DACPAC to Azure SQL Database'
