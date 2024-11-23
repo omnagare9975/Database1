@@ -8,8 +8,10 @@ variables:
   solution: '**/Database1.sln' # Update to your solution file
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  sqlServerConnectionString: '<your-database-connection-string>' # Replace with your SQL Server connection string
-  databaseName: '<your-database-name>'  # Replace with your target database name
+  sqlServer: 'db-auto-om'  # Your SQL server name
+  databaseName: 'sql-db-om'  # Your target database name
+  sqlUsername: 'omnagare'  # Your SQL username
+  sqlPassword: 'Ironman7028@'  # SQL password should be stored as a secret variable in the pipeline
 
 steps:
 # Install NuGet (ensures package manager is available)
@@ -54,14 +56,14 @@ steps:
     ArtifactName: 'drop'
     publishLocation: 'Container'
 
-# Deploy the .dacpac file to SQL Server or Azure SQL Database
+# Deploy the .dacpac file to Azure SQL Database
 - task: SqlAzureDacpacDeployment@1
   inputs:
     azureSubscription: 'ITX-ADMIN-SERVICE'  # Replace with your Azure subscription
-    ServerName: 'db-auto-om'  # Replace with your SQL Server name (or Azure SQL Database server)
-    DatabaseName: 'sql-db-om'  # Database name from variable
+    ServerName: '$(sqlServer)'  # Replace with your SQL Server name (or Azure SQL Database server)
+    DatabaseName: '$(databaseName)'  # Database name from variable
     DacpacFile: '$(Build.ArtifactStagingDirectory)/drop/*.dacpac'  # Path to .dacpac file in the artifact
-    SqlUsername: 'omnagare'  # Replace with your SQL server username
-    SqlPassword: 'Ironman7028@'  # Secure SQL password from pipeline secrets
+    SqlUsername: '$(sqlUsername)'  # Replace with your SQL server username
+    SqlPassword: '$(sqlPassword)'  # Secure SQL password from pipeline secrets
     PublishProfile: ''  # Optional, if using a publish profile (for advanced scenarios)
     AdditionalArguments: '/p:DropObjectsNotInSource=true'  # Optional: argument to drop objects not in source
