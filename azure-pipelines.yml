@@ -5,7 +5,7 @@ pool:
   name: 'Windows-Based'
 
 variables:
-  solution: '**/Database1.sln' # Update to your solution file
+  solution: '**/Database1.sln' # Update to your solution file3
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
