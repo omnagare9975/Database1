@@ -12,6 +12,7 @@ variables:
   databaseName: 'db-auto'  # Your target database name
   sqlUsername: 'omnagare'  # Your SQL username
   sqlPassword: 'Ironman7028@'  # SQL password should be stored as a secret variable in the pipeline
+  resourceGroupName: 'db-om-testing'  # Define the resource group name here
 
 steps:
 # Install NuGet (ensures package manager is available)
@@ -63,15 +64,16 @@ steps:
     scriptType: 'bash'  # Azure CLI uses bash by default
     scriptLocation: 'inlineScript'  # Inline Azure CLI script
     inlineScript: |
-      # Login to Azure if not already authenticated
+      # Set the Azure subscription context
       az account set --subscription $(azureSubscription)
       
       # Deploy the .dacpac file to the Azure SQL Database
-      az sql db deploy --server $(sqlServer) \
-                       --name $(databaseName) \
-                       --resource-group $(resourceGroupName) \
-                       --dacpac $(Build.ArtifactStagingDirectory)/drop/*.dacpac \
-                       --admin-user $(sqlUsername) \
-                       --admin-password $(sqlPassword) \
-                       --additional-arguments '/p:DropObjectsNotInSource=true'
+      az sql db update \
+        --server $(sqlServer) \
+        --name $(databaseName) \
+        --resource-group $(resourceGroupName) \
+        --admin-user $(sqlUsername) \
+        --admin-password $(sqlPassword) \
+        --additional-arguments '/p:DropObjectsNotInSource=true'
+
     displayName: 'Deploy DACPAC to Azure SQL Database'
