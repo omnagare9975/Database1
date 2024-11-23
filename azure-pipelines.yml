@@ -1,5 +1,5 @@
 trigger:
-- master  # Corrected the branch name to 'main' based on convention. Update if necessary.
+- master  # Update this with the actual branch name if it's different.
 
 pool:
   vmImage: 'windows-latest'
@@ -18,19 +18,19 @@ stages:
       displayName: "Restore NuGet Packages"
       inputs:
         command: 'restore'
-        restoreSolution: '$(Build.SourcesDirectory)/Database1.sln'  # Matches solution file in root directory
+        restoreSolution: '$(Build.SourcesDirectory)/Database1.sln'  # Path to solution file
 
     - task: VSBuild@1
       displayName: "Build SQL Project"
       inputs:
-        solution: '$(Build.SourcesDirectory)/Database1.sln'  # Matches solution file in root directory
-        msbuildArgs: '/p:DeployOnBuild=true /p:Configuration=Release'
+        solution: '$(Build.SourcesDirectory)/Database1.sln'  # Path to solution file
+        msbuildArgs: '/p:DeployOnBuild=true /p:Configuration=Release /p:OutputPath=$(Build.ArtifactStagingDirectory)'  # Ensure output goes to Artifact Staging Directory
         platform: 'Any CPU'
         configuration: 'Release'
 
     - task: PublishBuildArtifacts@1
       displayName: "Publish DACPAC Artifact"
       inputs:
-        pathtoPublish: '$(Build.SourcesDirectory)/bin/Release'  # Adjusted path to match Release output
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'  # Use the staging directory for artifacts
         artifactName: 'DACPAC'
         publishLocation: 'Container'
