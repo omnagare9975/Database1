@@ -37,7 +37,7 @@ stages:
     - task: PublishBuildArtifacts@1
       displayName: "Publish DACPAC Artifact"
       inputs:
-        pathtoPublish: '$(Build.SourcesDirectory)/bin/Release'  # Ensure DACPAC is in bin/Release
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)/bin/Release'  # Use Artifact Staging Directory
         artifactName: 'DACPAC'
 
 - stage: Deploy
